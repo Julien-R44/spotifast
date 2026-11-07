@@ -194,6 +194,9 @@ open = "5"
 percent-encoding = "2"
 urlencoding = "2"
 jiff = "0.2"
+# Durable, account-scoped listening statistics. Bundled SQLite keeps the same
+# database format on every desktop without requiring a system SQLite install.
+rusqlite = { version = "0.38", features = ["bundled"] }
 mdns-sd = "0.21"
 unicode-bidi = "0.3"
 hmac = "0.12"

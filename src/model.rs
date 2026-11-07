@@ -110,6 +110,8 @@ fn episode_retained_bytes(episode: &Episode) -> usize {
 pub enum Page {
     Home,
     TopSongs,
+    /// Listening measured on this computer, independent of Spotify's affinity tops.
+    Stats,
     /// The songs of the latest releases from followed artists.
     NewReleases,
     Search,
@@ -134,6 +136,7 @@ impl Page {
         match self {
             Page::Home => "home".into(),
             Page::TopSongs => "top-songs".into(),
+            Page::Stats => "stats".into(),
             Page::NewReleases => "new-releases".into(),
             Page::Search => "search".into(),
             Page::LikedSongs => "liked".into(),
@@ -155,6 +158,7 @@ impl Page {
         Some(match text {
             "home" => Page::Home,
             "top-songs" => Page::TopSongs,
+            "stats" => Page::Stats,
             "new-releases" => Page::NewReleases,
             "search" => Page::Search,
             "liked" => Page::LikedSongs,
@@ -1127,6 +1131,7 @@ pub struct Toast {
 #[derive(Clone, Debug)]
 pub enum Action {
     Open(Page),
+    SetStatsPeriod(crate::stats::Period),
     /// Opens the radio of a song shown in a list, after caching the row's
     /// song so the page has its name and cover (#644).
     OpenSongRadio {

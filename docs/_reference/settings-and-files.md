@@ -24,6 +24,7 @@ Spotifast follows each platform's conventions. On Linux:
 | Legacy proxy password | `~/.local/state/spotifast/proxy_password` | Removed after protected migration |
 | Last session | `~/.local/state/spotifast/session.json` | Yes |
 | Play history | `~/.local/state/spotifast/history.json` | Yes |
+| Listening statistics in this fork | `~/.local/state/spotifast/listening.sqlite3` | No, measurements cannot be fetched again |
 | Audio cache | `~/.cache/spotifast/audio/` | Always |
 | Artwork cache | `~/.cache/spotifast/art/` | Always |
 | Lyrics cache | `~/.cache/spotifast/lyrics/` | Always |
@@ -364,6 +365,47 @@ user can open. On Windows, `instance.key` holds the loopback port and a
 random token that every request must carry. Spotifast writes them on each
 start; nothing in them needs keeping.
 
+## Listening statistics in this fork
+
+**Listening stats** measures music played by Spotifast's built-in player while
+Spotifast is running, including in the tray. It does not measure Soloist, the
+official Spotify desktop app, other Connect devices, or episodes. Choose
+**Use the built-in player** to collect these statistics.
+
+SQLite stores the measurements in `listening.sqlite3` in the state folder,
+separately for each verified Spotify account. The database is not a cache and
+has no 500-play limit. Sign-out, cache clearing, and **Clear history** do not
+delete it. **Clear history** still clears only the existing Recents journal.
+There is no cloud backup or SensCritique connection in this version.
+
+A play counts after 30 seconds or half a shorter track, with a one-second
+minimum. Short skips still contribute their actual listening time. Pauses,
+loading, skipped positions, and long gaps between observations do not add
+listening time. Repeating a song starts a separate play. Rankings use counted
+plays first and listening time second, with up to 50 rows in each ranking.
+Album rankings add track plays, not completed listens of an entire album.
+Every credited artist receives that play's time, so adding artist totals can
+exceed the overall total.
+
+The database stores UTC instants. Daily listening time is split at local
+midnight using the computer's time zone at startup. A counted play belongs to
+the local day it started. Rows aggregate measurements by application run,
+account, local day, and track, rather than storing a timeline of individual
+plays. Monthly reports use calendar months, unlike Spotify's affinity-based
+Top songs. No past Spotify history is inferred from the Recents journal,
+because it has no measured listening durations.
+
+Writes run off the interface thread, at least every five seconds during
+playback, on a pause or track change, and at orderly shutdown. A forced exit
+can lose the interval since the last completed write. Database errors appear
+on the Stats page rather than replacing the database with an empty one.
+
+To back up the statistics, quit Spotifast, then copy `listening.sqlite3` from
+the state folder to another drive. Restore that file to the same folder while
+Spotifast is closed. Do not copy a live database as an ordinary file. This
+database contains private listening history for all accounts used in this
+profile, even though the interface shows only the signed-in account.
+
 ## settings.json
 
 Settings are stored in one readable JSON file and written atomically. Its
@@ -469,6 +511,10 @@ crash, attach `panic.log` too.
 Builds made with `cargo build --features demo` accept `--demo`, which loads
 sample data for screenshots and interface work. Demo mode never writes
 settings.
+
+In this fork, `--demo-page stats` seeds fictional listening data through SQLite.
+Add `--demo-show stats-empty` to show the empty state in a fresh demo profile.
+Demo data uses an isolated temporary profile unless `--demo-data` names one.
 
 `--demo-page` opens a page, such as `home`, `playlist:pl1`, or `artist:art0`,
 and `--demo-show` adds surfaces on top of it: a comma separated list of

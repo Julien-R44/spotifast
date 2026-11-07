@@ -1060,6 +1060,17 @@ fn contents(app: &mut App, ui: &mut egui::Ui, grid_art: Option<Rect>) {
     {
         app.actions.push(Action::FocusSearch);
     }
+    if nav_row(
+        ui,
+        &palette,
+        Icon::TrendingUp,
+        &gettext(locale, "Listening stats"),
+        page == Page::Stats,
+    )
+    .clicked()
+    {
+        app.actions.push(Action::Open(Page::Stats));
+    }
     ui.add_space(10.0);
     ui.painter().hline(
         ui.max_rect().x_range().shrink(4.0),

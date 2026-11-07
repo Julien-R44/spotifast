@@ -31,6 +31,13 @@ The interface includes complete
 **Playback needs Spotify Premium.** Free accounts can browse and search, but
 cannot play music through Spotifast.
 
+This personal fork adds **Listening stats** for the built-in player: monthly
+and all-time track, album, and artist rankings, actual listening time, and a
+daily chart. Measurements stay in a local, account-scoped SQLite database.
+Soloist, other Spotify apps, and phone playback are not measured in this first
+version. Existing Spotify history is not imported. See
+[local statistics and backup](docs/_reference/settings-and-files.md#listening-statistics-in-this-fork).
+
 ![Spotifast Home with the playlist library, recommendations, queue, and player visible](docs/screenshot.png)
 
 <details>

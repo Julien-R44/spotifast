@@ -29,6 +29,7 @@ src/ui/prerelease.rs
 src/ui/radio.rs
 src/ui/search.rs
 src/ui/show.rs
+src/ui/stats.rs
 src/ui/topbar.rs
 src/ui/update.rs
 src/ui/winamp/equalizer.rs

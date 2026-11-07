@@ -1106,6 +1106,23 @@ fn place_skin(source: &std::path::Path, folder: &std::path::Path) -> std::io::Re
 pub fn apply_flags(app: &mut App, page: Option<&str>, show: Option<&str>) {
     // Default screenshots to the main window regardless of saved settings.
     app.settings.winamp_window = false;
+    if page == Some("stats") {
+        let empty = show.is_some_and(|flags| flags.split(',').any(|flag| flag == "stats-empty"));
+        let mut entries = Vec::new();
+        if !empty {
+            let now = Timestamp::now();
+            for day in 0..21 {
+                for play in 0..(5 + (day * 11) % 27) {
+                    let song = track((day * 3 + play * play) % 20);
+                    let listened =
+                        u64::from(song.duration_ms).saturating_sub((play as u64 % 4) * 21_000);
+                    let at = now - SignedDuration::from_secs((day * 86400 + play * 600) as i64);
+                    entries.push((song, at, listened));
+                }
+            }
+        }
+        app.stats.seed("demo", entries);
+    }
     if matches!(page, Some("prerelease" | "prerelease-fog-lake")) {
         let uri = "spotify:prerelease:0kRaNkRxpO16BjxJU0IQAL";
         if let Ok(mut data) =
@@ -2340,6 +2357,64 @@ mod tests {
         );
         assert_eq!(tree.focus, pause);
         app.backend.shutdown();
+    }
+
+    #[test]
+    fn listening_stats_navigation_and_calendar_periods_are_accessible() {
+        use egui::accesskit::{Action as AccessibleAction, Role};
+        let (ctx, mut app) = accessible_app("listening-stats");
+        let at = Timestamp::now();
+        app.stats.seed(
+            "demo",
+            vec![
+                (track(1), at, 60_000),
+                (track(2), at, 90_000),
+                (track(3), at - SignedDuration::from_hours(70 * 24), 45_000),
+            ],
+        );
+        assert!(app.stats.flush(std::time::Duration::from_secs(5)));
+        accessible_frame(&ctx, &mut app, vec![]);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let stats = accessible_node(&tree, "Listening stats", Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(stats, AccessibleAction::Click, None)],
+        );
+        assert_eq!(app.page(), &Page::Stats);
+        let settle = |app: &mut App| {
+            let deadline = Instant::now() + std::time::Duration::from_secs(5);
+            while app.stats.loading && Instant::now() < deadline {
+                app.stats.poll();
+                std::thread::sleep(std::time::Duration::from_millis(5));
+            }
+            assert!(app.stats.error.is_none(), "{:?}", app.stats.error);
+            assert!(!app.stats.loading);
+        };
+        settle(&mut app);
+        assert_eq!(app.stats.report.as_ref().unwrap().plays, 2);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let all_time = accessible_node(&tree, "All time", Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(all_time, AccessibleAction::Click, None)],
+        );
+        settle(&mut app);
+        assert_eq!(app.stats.report.as_ref().unwrap().plays, 3);
+        let tree = accessible_frame(&ctx, &mut app, vec![]);
+        let this_month = accessible_node(&tree, "This month", Role::Button);
+        accessible_frame(
+            &ctx,
+            &mut app,
+            vec![accessible_action(this_month, AccessibleAction::Click, None)],
+        );
+        settle(&mut app);
+        assert_eq!(app.stats.report.as_ref().unwrap().listened_ms, 150_000);
+        app.shutdown();
+        let root = app.dirs.state.parent().unwrap().to_path_buf();
+        drop(app);
+        let _ = std::fs::remove_dir_all(root);
     }
 
     /// #990: Page Up/Down scroll the main page, Home/End jump to its ends.
@@ -3623,6 +3698,8 @@ mod tests {
         use egui::accesskit::Role;
         let (ctx, mut app) = accessible_app("library-grid-drop-highlight");
         app.settings.sidebar_grid = true;
+        // Read the target after the sidebar layout settles.
+        accessible_frame(&ctx, &mut app, vec![]);
         let tree = accessible_frame(&ctx, &mut app, vec![]);
         let liked = tree
             .nodes

@@ -570,6 +570,8 @@ pub struct App {
     pub home: HomeData,
     /// Local play history. See [`crate::history`].
     pub plays: crate::history::History,
+    /// Durable listening measurements, kept separately from disposable caches.
+    pub stats: crate::stats::Stats,
     /// Writes settings, session and history off the UI thread.
     files: fastframe_file::Writer,
     /// Current track timing used to decide when a play counts.
@@ -1117,6 +1119,7 @@ impl App {
         // settings beside it until migration binds that password in the store.
         settings.proxy_password_legacy |= dirs.proxy_secret_file().try_exists().unwrap_or(true);
         let plays = crate::history::History::load(&dirs.history_file());
+        let stats = crate::stats::Stats::new(dirs.stats_file(), waker);
         let tap = crate::vis::AudioTap::new();
         let eq = crate::eq::shared();
         if let Ok(mut shared) = eq.lock() {
@@ -1327,6 +1330,7 @@ impl App {
             liked_recheck_at: None,
             home: HomeData::default(),
             plays,
+            stats,
             files: fastframe_file::Writer::new(),
             listening: None,
             recents: crate::model::CursorList::default(),
@@ -3690,6 +3694,7 @@ impl App {
                     self.refresh_queue(true);
                 }
             }
+            Page::Stats => self.stats.refresh(),
             Page::Settings => {}
         }
     }
@@ -6487,6 +6492,7 @@ impl App {
                     self.refresh_queue(true);
                 }
             }
+            Page::Stats => self.stats.refresh(),
             Page::Settings => self.refresh_autostart(),
         }
     }
@@ -12510,6 +12516,7 @@ impl App {
                     self.evict_stale_pages();
                 }
             }
+            Action::SetStatsPeriod(period) => self.stats.set_period(period),
             Action::PlayContext {
                 uri,
                 offset_uri,
@@ -14381,6 +14388,7 @@ impl App {
         self.handle_notch_commands();
         self.tick(ctx);
         self.note_listening();
+        self.note_stats();
         // MilkDrop runs in a child process and can outlive the main window.
         // Poll it before applying actions because its keys produce actions.
         #[cfg(feature = "milkdrop")]
@@ -14507,6 +14515,8 @@ impl App {
             use crate::power::Event;
             match event {
                 Event::Suspending(ack) | Event::EndingSession(ack) => {
+                    self.note_stats();
+                    self.stats.flush(SUSPEND_FLUSH_TIMEOUT);
                     self.save_state();
                     self.plays.save(&self.files, &self.dirs.history_file());
                     // The system may stop for good after this: the writes
@@ -14618,6 +14628,32 @@ impl App {
             .record(crate::history::played_track(&now), jiff::Timestamp::now());
         self.plays.save(&self.files, &self.dirs.history_file());
         self.rebuild_recents();
+    }
+
+    /// Measure the built-in engine, never an optimistic row preview or a
+    /// remote Connect device. Soloist needs its own per-play identity before
+    /// it can provide equally reliable repeat counts.
+    fn note_stats(&mut self) {
+        if !self.offline {
+            let account = self.user_id().map(str::to_owned);
+            let sample = self
+                .now_playing_live()
+                .filter(|now| now.local && !now.is_episode)
+                .map(|now| crate::stats::Sample {
+                    track: crate::history::played_track(&now),
+                    sequence: self.local.track_sequence,
+                    playing: self.local.playback == Playback::Playing && !self.local.loading,
+                    position_ms: self.local.position_now(),
+                    seek_sequence: self.local.seek_sequence,
+                });
+            self.stats.observe(
+                account.as_deref(),
+                sample,
+                Instant::now(),
+                jiff::Timestamp::now(),
+            );
+        }
+        self.stats.poll();
     }
 
     /// Puts Spotifast in the Dock or takes it out, as Settings asks, on a
@@ -14948,6 +14984,10 @@ impl App {
         if std::mem::take(&mut self.skin_return) {
             self.settings.winamp_window = true;
             self.settings_dirty = true;
+        }
+        self.note_stats();
+        if !self.stats.flush(fastframe_file::FLUSH_TIMEOUT) {
+            log::warn!("listening statistics could not be saved before exit");
         }
         self.save_state();
         self.flush_files();
@@ -33327,6 +33367,68 @@ mod tests {
             assert!(play.offset_position.unwrap() < MAX_PLAYED_URIS as u32);
         }
         app.backend.shutdown();
+    }
+
+    #[test]
+    fn listening_stats_measure_the_engine_not_optimistic_controls_or_other_devices() {
+        let mut app = headless_app();
+        crate::demo::populate(&mut app);
+        app.offline = false;
+        let remote = app.remote.take();
+        let root = std::env::temp_dir().join(format!(
+            "spotifast-engine-statistics-{:032x}",
+            rand::random::<u128>()
+        ));
+        app.stats = crate::stats::Stats::new(root.join("listening.sqlite3"), &Waker::default());
+        app.local = LocalState {
+            playback: Playback::Playing,
+            track_sequence: 1,
+            track: Some(crate::player::LocalTrack {
+                uri: "spotify:track:measured".into(),
+                title: "Measured".into(),
+                duration_ms: 180_000,
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        app.optimistic_playing = Some((false, Instant::now()));
+        app.note_stats();
+        std::thread::sleep(Duration::from_millis(20));
+        app.local.playback = Playback::Paused;
+        app.optimistic_playing = Some((true, Instant::now()));
+        app.note_stats();
+        let report = |app: &mut App| {
+            assert!(app.stats.flush(Duration::from_secs(5)));
+            app.stats.refresh();
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while app.stats.loading && Instant::now() < deadline {
+                app.stats.poll();
+                std::thread::sleep(Duration::from_millis(2));
+            }
+            assert!(app.stats.error.is_none(), "{:?}", app.stats.error);
+            assert!(!app.stats.loading);
+            app.stats.report.clone().unwrap()
+        };
+        let measured = report(&mut app);
+        assert!(measured.listened_ms > 0);
+        assert_eq!(measured.tracks[0].uri, "spotify:track:measured");
+        std::thread::sleep(Duration::from_millis(20));
+        app.note_stats();
+        app.local.playback = Playback::Playing;
+        app.local.loading = true;
+        app.note_stats();
+        std::thread::sleep(Duration::from_millis(20));
+        app.note_stats();
+        app.local.playback = Playback::Stopped;
+        app.remote = remote;
+        assert!(!app.now_playing_live().unwrap().local);
+        app.note_stats();
+        std::thread::sleep(Duration::from_millis(20));
+        app.note_stats();
+        assert_eq!(report(&mut app).listened_ms, measured.listened_ms);
+        app.backend.shutdown();
+        drop(app);
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]

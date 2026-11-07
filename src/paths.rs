@@ -161,6 +161,11 @@ impl AppDirs {
         self.state.join("history.json")
     }
 
+    /// Durable listening measurements, never removed with Spotify's caches.
+    pub fn stats_file(&self) -> PathBuf {
+        self.state.join("listening.sqlite3")
+    }
+
     pub fn shared_web_token_file(&self) -> PathBuf {
         self.state.join("shared_web_api_token.json")
     }
