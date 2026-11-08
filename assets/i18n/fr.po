@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: Spotifast\n"
 "Report-Msgid-Bugs-To: https://github.com/crmne/spotifast/issues/new?"
 "template=translation.yml\n"
-"POT-Creation-Date: 2026-11-07 23:10+0000\n"
+"POT-Creation-Date: 2026-11-08 00:30+0000\n"
 "PO-Revision-Date: 2026-09-09 13:30+0000\n"
 "Last-Translator: Spotifast contributors\n"
 "Language-Team: French\n"
@@ -83,7 +83,7 @@ msgstr "Accueil"
 msgid "Search"
 msgstr "Rechercher"
 
-#: src/ui/sidebar.rs:1067 src/ui/stats.rs:28
+#: src/ui/sidebar.rs:1067 src/ui/stats.rs:36
 msgid "Listening stats"
 msgstr "Statistiques d'écoute"
 
@@ -120,12 +120,12 @@ msgid "Playlists"
 msgstr "Playlists"
 
 #: src/ui/sidebar.rs:1184 src/model.rs:810 src/model.rs:944
-#: src/ui/library.rs:17 src/ui/search.rs:595 src/ui/stats.rs:118
+#: src/ui/library.rs:17 src/ui/search.rs:595 src/ui/stats.rs:565
 msgid "Albums"
 msgstr "Albums"
 
 #: src/ui/sidebar.rs:1185 src/model.rs:809 src/ui/library.rs:22
-#: src/ui/search.rs:527 src/ui/stats.rs:119
+#: src/ui/search.rs:527 src/ui/stats.rs:566
 msgid "Artists"
 msgstr "Artistes"
 
@@ -376,7 +376,7 @@ msgid "Next up"
 msgstr "Ensuite"
 
 #: src/ui/queue.rs:625 src/ui/queue.rs:658 src/ui/widgets.rs:2998
-#: src/ui/collection.rs:1376 src/ui/prerelease.rs:283 src/ui/stats.rs:43
+#: src/ui/collection.rs:1376 src/ui/prerelease.rs:283 src/ui/stats.rs:69
 msgid "Retry"
 msgstr "Réessayer"
 
@@ -3650,7 +3650,7 @@ msgctxt "column"
 msgid "Title"
 msgstr "Titre"
 
-#: src/ui/prerelease.rs:320
+#: src/ui/prerelease.rs:320 src/ui/stats.rs:308
 msgid "Plays"
 msgstr "Écoutes"
 
@@ -3795,7 +3795,7 @@ msgstr "{duration} restant"
 msgid "Played"
 msgstr "Écouté"
 
-#: src/ui/stats.rs:35
+#: src/ui/stats.rs:39
 msgid ""
 "Measured on this computer with the built-in player. No phone plays or "
 "estimated song durations."
@@ -3803,71 +3803,32 @@ msgstr ""
 "Mesurées sur cet ordinateur avec le lecteur intégré. Sans les écoutes du "
 "téléphone ni les durées estimées des morceaux."
 
-#: src/ui/stats.rs:59
-msgid "No listening recorded in this period"
-msgstr "Aucune écoute enregistrée sur cette période"
+#: src/ui/stats.rs:40
+msgid "Local history"
+msgstr "Historique local"
 
-#: src/ui/stats.rs:62
+#: src/ui/stats.rs:46
+msgid "All your listening"
+msgstr "Toutes vos écoutes"
+
+#: src/ui/stats.rs:63
+msgid "Couldn't load listening stats"
+msgstr "Impossible de charger les statistiques"
+
+#: src/ui/stats.rs:88
+msgid "Your next listen starts the story"
+msgstr "Tout commence par une écoute"
+
+#: src/ui/stats.rs:92
 msgid ""
-"Play music with the built-in player to start your local history. Older "
-"Spotify plays are not imported."
+"Play music with the built-in player. Your time, favorites, and daily rhythm "
+"will appear here. Older Spotify plays are not imported."
 msgstr ""
-"Écoutez de la musique avec le lecteur intégré pour commencer votre "
-"historique local. Les anciennes écoutes Spotify ne sont pas importées."
+"Écoutez de la musique avec le lecteur intégré. Retrouvez ici votre temps "
+"d'écoute, vos favoris et votre rythme quotidien. Les anciennes écoutes "
+"Spotify ne sont pas importées."
 
-#: src/ui/stats.rs:70
-msgid "Time listened"
-msgstr "Temps d'écoute"
-
-#: src/ui/stats.rs:73
-msgid "Counted plays"
-msgstr "Écoutes comptabilisées"
-
-#: src/ui/stats.rs:75
-msgid "Different tracks"
-msgstr "Titres différents"
-
-#: src/ui/stats.rs:79
-msgid "Different artists"
-msgstr "Artistes différents"
-
-#: src/ui/stats.rs:103
-msgid "Daily listening"
-msgstr "Écoutes quotidiennes"
-
-#: src/ui/stats.rs:104
-msgid "Daily listening · last 31 days"
-msgstr "Écoutes quotidiennes · 31 derniers jours"
-
-#: src/ui/stats.rs:117
-msgid "Tracks"
-msgstr "Titres"
-
-#: src/ui/stats.rs:132
-msgid ""
-"Top 50, ordered by counted plays, then listening time. A play counts after "
-"30 seconds or half a shorter track."
-msgstr ""
-"Top 50, trié par nombre d'écoutes, puis par temps d'écoute. Une écoute "
-"compte après 30 secondes ou la moitié d'un morceau plus court."
-
-#: src/ui/stats.rs:136
-msgid "Ranking"
-msgstr "Classement"
-
-#: src/ui/stats.rs:138
-msgid "Plays · time listened"
-msgstr "Écoutes · durée"
-
-#: src/ui/stats.rs:147
-msgid ""
-"Each credited artist receives the track's listening time. Artist totals are "
-"not added together."
-msgstr ""
-"Chaque artiste crédité reçoit le temps d'écoute du morceau. Les totaux des "
-"artistes ne s'additionnent pas."
-
-#: src/ui/stats.rs:152
+#: src/ui/stats.rs:128
 msgid ""
 "Stored only in listening.sqlite3, separately for each account. Clearing "
 "Spotify caches or Recents does not delete these stats."
@@ -3876,21 +3837,153 @@ msgstr ""
 "Vider les caches Spotify ou les écoutes récentes ne supprime pas ces "
 "statistiques."
 
-#: src/ui/stats.rs:165
+#: src/ui/stats.rs:145
 msgid "This month"
 msgstr "Ce mois-ci"
 
-#: src/ui/stats.rs:176
+#: src/ui/stats.rs:156
 msgid "All time"
 msgstr "Depuis le début"
 
-#: src/ui/stats.rs:190
+#: src/ui/stats.rs:171
 msgid "Previous month"
 msgstr "Mois précédent"
 
-#: src/ui/stats.rs:211
+#: src/ui/stats.rs:186
 msgid "Next month"
 msgstr "Mois suivant"
+
+#: src/ui/stats.rs:203
+msgid "Time listened"
+msgstr "Temps d'écoute"
+
+#: src/ui/stats.rs:205
+msgid "Measured, not estimated"
+msgstr "Mesuré, pas estimé"
+
+#: src/ui/stats.rs:209
+msgid "Counted plays"
+msgstr "Écoutes comptabilisées"
+
+#: src/ui/stats.rs:211
+msgid "30 seconds or half a short track"
+msgstr "30 s ou la moitié d'un titre court"
+
+#: src/ui/stats.rs:215
+msgid "Different tracks"
+msgstr "Titres différents"
+
+#: src/ui/stats.rs:219
+#, rust-format
+msgid "{count} album"
+msgid_plural "{count} albums"
+msgstr[0] "{count} album"
+msgstr[1] "{count} albums"
+
+#: src/ui/stats.rs:227
+msgid "Different artists"
+msgstr "Artistes différents"
+
+#: src/ui/stats.rs:229
+msgid "Including collaborations"
+msgstr "Collaborations incluses"
+
+#: src/ui/stats.rs:303
+msgid "Daily listening"
+msgstr "Écoutes quotidiennes"
+
+#: src/ui/stats.rs:309
+msgid "Time"
+msgstr "Durée"
+
+#: src/ui/stats.rs:315
+msgid "Actual playback, day by day"
+msgstr "Vos écoutes réelles, jour après jour"
+
+#: src/ui/stats.rs:317
+msgid "Last 31 days · totals above cover all time"
+msgstr "31 derniers jours · totaux depuis le début ci-dessus"
+
+#: src/ui/stats.rs:412
+#, rust-format
+msgid "{count} counted play"
+msgid_plural "{count} counted plays"
+msgstr[0] "{count} écoute comptabilisée"
+msgstr[1] "{count} écoutes comptabilisées"
+
+#: src/ui/stats.rs:484
+msgid "Active days"
+msgstr "Jours actifs"
+
+#: src/ui/stats.rs:486
+msgid "Average / active day"
+msgstr "Moyenne par jour actif"
+
+#: src/ui/stats.rs:496
+msgid "Best day"
+msgstr "Meilleur jour"
+
+#: src/ui/stats.rs:501
+msgid "Longest streak"
+msgstr "Plus longue série"
+
+#: src/ui/stats.rs:502
+#, rust-format
+msgid "{count} day"
+msgid_plural "{count} days"
+msgstr[0] "{count} jour"
+msgstr[1] "{count} jours"
+
+#: src/ui/stats.rs:514
+msgid "In this period"
+msgstr "Sur cette période"
+
+#: src/ui/stats.rs:540
+msgid "on your biggest listening day"
+msgstr "lors de votre journée la plus musicale"
+
+#: src/ui/stats.rs:558
+msgid "On repeat"
+msgstr "En boucle"
+
+#: src/ui/stats.rs:564
+msgid "Tracks"
+msgstr "Titres"
+
+#: src/ui/stats.rs:576
+msgid "Top 50 · ranked by counted plays, then listening time"
+msgstr "Top 50 · par nombre d'écoutes, puis par durée"
+
+#: src/ui/stats.rs:590
+msgid "No matching metadata recorded yet"
+msgstr "Aucune métadonnée correspondante enregistrée"
+
+#: src/ui/stats.rs:618
+msgid ""
+"A play counts after 30 seconds or half a shorter track. Short skips still "
+"add listening time."
+msgstr ""
+"Une écoute compte après 30 secondes ou la moitié d'un titre plus court. Les "
+"titres passés plus tôt contribuent tout de même au temps d'écoute."
+
+#: src/ui/stats.rs:622
+msgid "Album plays add up track plays, not complete album listens."
+msgstr ""
+"Les écoutes d'un album additionnent celles de ses titres, pas les lectures "
+"intégrales."
+
+#: src/ui/stats.rs:626
+msgid ""
+"Each credited artist receives the track's listening time. Artist totals are "
+"not added together."
+msgstr ""
+"Chaque artiste crédité reçoit le temps d'écoute du morceau. Les totaux des "
+"artistes ne s'additionnent pas."
+
+#: src/ui/stats.rs:781
+#, rust-format
+msgid "{percent}% of listening time"
+msgstr "{percent} % du temps d'écoute"
 
 #: src/ui/topbar.rs:246
 msgid "Show sidebar (Ctrl+B)"
@@ -4349,6 +4442,32 @@ msgstr ""
 "ce PC ou cette machine virtuelle n’en fournit pas. Installez le pilote "
 "graphique ou activez l’accélération GPU de la machine virtuelle. Ouvrir "
 "{url} pour en savoir plus ?"
+
+#~ msgid "No listening recorded in this period"
+#~ msgstr "Aucune écoute enregistrée sur cette période"
+
+#~ msgid ""
+#~ "Play music with the built-in player to start your local history. Older "
+#~ "Spotify plays are not imported."
+#~ msgstr ""
+#~ "Écoutez de la musique avec le lecteur intégré pour commencer votre "
+#~ "historique local. Les anciennes écoutes Spotify ne sont pas importées."
+
+#~ msgid "Daily listening · last 31 days"
+#~ msgstr "Écoutes quotidiennes · 31 derniers jours"
+
+#~ msgid ""
+#~ "Top 50, ordered by counted plays, then listening time. A play counts "
+#~ "after 30 seconds or half a shorter track."
+#~ msgstr ""
+#~ "Top 50, trié par nombre d'écoutes, puis par temps d'écoute. Une écoute "
+#~ "compte après 30 secondes ou la moitié d'un morceau plus court."
+
+#~ msgid "Ranking"
+#~ msgstr "Classement"
+
+#~ msgid "Plays · time listened"
+#~ msgstr "Écoutes · durée"
 
 #~ msgid "3. Pair once in Spotify"
 #~ msgstr "3. Appairer une fois dans Spotify"

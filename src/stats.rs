@@ -62,6 +62,7 @@ pub struct Report {
     pub plays: u64,
     pub listened_ms: u64,
     pub unique_tracks: u64,
+    pub unique_albums: u64,
     pub unique_artists: u64,
     pub tracks: Vec<Rank>,
     pub albums: Vec<Rank>,
@@ -78,6 +79,7 @@ pub struct Rank {
     pub uri: String,
     pub name: String,
     pub subtitle: String,
+    pub image: Option<String>,
     pub plays: u64,
     pub listened_ms: u64,
 }
@@ -770,23 +772,17 @@ fn artist_key(artist: &crate::api::models::ArtistRef) -> Option<(String, String)
     }
 }
 
-fn add_rank(
-    ranks: &mut BTreeMap<String, Rank>,
-    key: String,
-    uri: String,
-    name: String,
-    subtitle: String,
-    plays: u64,
-    listened_ms: u64,
-) {
-    let rank = ranks.entry(key).or_insert_with(|| Rank {
-        uri,
-        name,
-        subtitle,
-        ..Rank::default()
-    });
-    rank.plays = rank.plays.saturating_add(plays);
-    rank.listened_ms = rank.listened_ms.saturating_add(listened_ms);
+fn add_rank(ranks: &mut BTreeMap<String, Rank>, key: String, entry: Rank) {
+    ranks
+        .entry(key)
+        .and_modify(|rank| {
+            rank.plays = rank.plays.saturating_add(entry.plays);
+            rank.listened_ms = rank.listened_ms.saturating_add(entry.listened_ms);
+            if rank.image.is_none() {
+                rank.image = entry.image.clone();
+            }
+        })
+        .or_insert(entry);
 }
 
 fn top(ranks: BTreeMap<String, Rank>) -> Vec<Rank> {
@@ -855,11 +851,14 @@ fn read_report(database: &Connection, query: &Query) -> anyhow::Result<Report> {
         add_rank(
             &mut tracks,
             key,
-            uri,
-            track.name.clone(),
-            subtitle.clone(),
-            plays,
-            listened_ms,
+            Rank {
+                uri,
+                name: track.name.clone(),
+                subtitle: subtitle.clone(),
+                image: track.image(160).map(str::to_owned),
+                plays,
+                listened_ms,
+            },
         );
 
         let mut credited = HashSet::new();
@@ -870,11 +869,13 @@ fn read_report(database: &Connection, query: &Query) -> anyhow::Result<Report> {
                 add_rank(
                     &mut artists,
                     key,
-                    uri,
-                    artist.name.clone(),
-                    String::new(),
-                    plays,
-                    listened_ms,
+                    Rank {
+                        uri,
+                        name: artist.name.clone(),
+                        plays,
+                        listened_ms,
+                        ..Rank::default()
+                    },
                 );
             }
         }
@@ -899,16 +900,20 @@ fn read_report(database: &Connection, query: &Query) -> anyhow::Result<Report> {
                 add_rank(
                     &mut albums,
                     key,
-                    uri,
-                    album.name.clone(),
-                    subtitle,
-                    plays,
-                    listened_ms,
+                    Rank {
+                        uri,
+                        name: album.name.clone(),
+                        subtitle,
+                        image: track.image(160).map(str::to_owned),
+                        plays,
+                        listened_ms,
+                    },
                 );
             }
         }
     }
     report.unique_tracks = tracks.len() as u64;
+    report.unique_albums = albums.len() as u64;
     report.unique_artists = artists.len() as u64;
     report.tracks = top(tracks);
     report.albums = top(albums);
@@ -1308,6 +1313,7 @@ mod tests {
         assert_eq!(report.plays, 55);
         assert_eq!(report.listened_ms, 110_500);
         assert_eq!(report.unique_tracks, 56);
+        assert_eq!(report.unique_albums, 55);
         assert_eq!(report.unique_artists, 56);
         assert_eq!(report.tracks.len(), 50);
         assert_eq!(report.tracks[0].name, "Track 00");
@@ -1370,6 +1376,11 @@ mod tests {
         track.album = Some(Album {
             id: "found".into(),
             name: "Found album".into(),
+            images: vec![crate::api::models::Image {
+                url: "https://i.scdn.co/image/found".into(),
+                width: Some(160),
+                height: Some(160),
+            }],
             ..Album::default()
         });
         fixture.observe(Some("alice"), Some(sample(&track, 1, 2_000, false)), 2_000);
@@ -1377,6 +1388,12 @@ mod tests {
         assert_eq!(report.albums.len(), 1);
         assert_eq!(report.albums[0].uri, "spotify:album:found");
         assert_eq!(report.albums[0].name, "Found album");
+        assert_eq!(report.unique_albums, 1);
+        assert_eq!(
+            report.albums[0].image.as_deref(),
+            Some("https://i.scdn.co/image/found")
+        );
+        assert_eq!(report.tracks[0].image, report.albums[0].image);
         assert_eq!(
             (report.albums[0].plays, report.albums[0].listened_ms),
             (1, 2_000)

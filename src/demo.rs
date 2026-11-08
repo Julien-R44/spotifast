@@ -2417,6 +2417,103 @@ mod tests {
         let _ = std::fs::remove_dir_all(root);
     }
 
+    #[test]
+    fn listening_stats_show_daily_details_and_open_ranked_albums() {
+        use egui::accesskit::{Action as AccessibleAction, Role, Toggled};
+        let (ctx, mut app) = accessible_app(&format!("stats-details-{}", rand::random::<u64>()));
+        let month = jiff::Zoned::now().date().first_of_month();
+        let at = month
+            .to_zoned(jiff::tz::TimeZone::system())
+            .unwrap()
+            .timestamp();
+        app.stats.seed(
+            "demo",
+            vec![
+                (track(1), at + SignedDuration::from_hours(60), 60_000),
+                (track(2), at + SignedDuration::from_hours(84), 90_000),
+                (track(3), at + SignedDuration::from_hours(132), 45_000),
+            ],
+        );
+        assert!(app.stats.flush(std::time::Duration::from_secs(5)));
+        app.open(Page::Stats);
+        let deadline = Instant::now() + std::time::Duration::from_secs(5);
+        while app.stats.loading && Instant::now() < deadline {
+            app.stats.poll();
+            std::thread::sleep(std::time::Duration::from_millis(2));
+        }
+        assert!(app.stats.error.is_none(), "{:?}", app.stats.error);
+        assert!(!app.stats.loading);
+        accessible_frame_height(&ctx, &mut app, vec![], 1200.0);
+        let tree = accessible_frame_height(&ctx, &mut app, vec![], 1200.0);
+        let best_day = crate::util::format_date(
+            app.locale,
+            &month.with().day(4).build().unwrap().to_string(),
+        );
+        for expected in ["1 min 5 sec", "1 min 30 sec", "2 days", best_day.as_str()] {
+            assert!(
+                tree.nodes
+                    .iter()
+                    .any(|(_, node)| node.value() == Some(expected)),
+                "missing daily insight {expected}"
+            );
+        }
+        let plays = accessible_node(&tree, "Plays", Role::Button);
+        accessible_frame_height(
+            &ctx,
+            &mut app,
+            vec![accessible_action(plays, AccessibleAction::Click, None)],
+            1200.0,
+        );
+        let tree = accessible_frame_height(&ctx, &mut app, vec![], 1200.0);
+        assert_eq!(
+            tree.nodes
+                .iter()
+                .find(|(_, node)| node.label() == Some("Plays"))
+                .unwrap()
+                .1
+                .toggled(),
+            Some(Toggled::True)
+        );
+        // The library has an Albums control too. Use the control next to the
+        // track ranking, not the library's filter with the same label.
+        let albums = tree
+            .nodes
+            .iter()
+            .filter(|(_, node)| node.label() == Some("Albums") && node.role() == Role::Button)
+            .max_by(|(_, a), (_, b)| a.bounds().unwrap().y0.total_cmp(&b.bounds().unwrap().y0))
+            .map(|(id, _)| *id)
+            .expect("album ranking control");
+        accessible_frame_height(
+            &ctx,
+            &mut app,
+            vec![accessible_action(albums, AccessibleAction::Click, None)],
+            1200.0,
+        );
+        let tree = accessible_frame_height(&ctx, &mut app, vec![], 1200.0);
+        let album = tree
+            .nodes
+            .iter()
+            .find(|(_, node)| {
+                node.role() == Role::Button
+                    && node
+                        .label()
+                        .is_some_and(|label| label.starts_with("1. All Melody ·"))
+            })
+            .map(|(id, _)| *id)
+            .expect("ranked album");
+        accessible_frame_height(
+            &ctx,
+            &mut app,
+            vec![accessible_action(album, AccessibleAction::Click, None)],
+            1200.0,
+        );
+        assert_eq!(app.page(), &Page::Album("alb2".into()));
+        app.shutdown();
+        let root = app.dirs.state.parent().unwrap().to_path_buf();
+        drop(app);
+        let _ = std::fs::remove_dir_all(root);
+    }
+
     /// #990: Page Up/Down scroll the main page, Home/End jump to its ends.
     /// The selection, page, navigation history and playback state stay put,
     /// at a normal and a narrow window size in both themes.

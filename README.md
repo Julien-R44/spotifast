@@ -32,8 +32,10 @@ The interface includes complete
 cannot play music through Spotifast.
 
 This personal fork adds **Listening stats** for the built-in player: monthly
-and all-time track, album, and artist rankings, actual listening time, and a
-daily chart. Measurements stay in a local, account-scoped SQLite database.
+and all-time track, album, and artist rankings with artwork, actual listening
+time, and a daily chart of time or plays. Period summaries show active days,
+the average per active day, the best day, and the longest listening streak.
+Measurements stay in a local, account-scoped SQLite database.
 Soloist, other Spotify apps, and phone playback are not measured in this first
 version. Existing Spotify history is not imported. See
 [local statistics and backup](docs/_reference/settings-and-files.md#listening-statistics-in-this-fork).

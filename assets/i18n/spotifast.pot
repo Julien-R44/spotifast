@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Spotifast\n"
 "Report-Msgid-Bugs-To: https://github.com/crmne/spotifast/issues/new?"
 "template=translation.yml\n"
-"POT-Creation-Date: 2026-11-07 23:10+0000\n"
+"POT-Creation-Date: 2026-11-08 00:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -86,7 +86,7 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: src/ui/sidebar.rs:1067 src/ui/stats.rs:28
+#: src/ui/sidebar.rs:1067 src/ui/stats.rs:36
 msgid "Listening stats"
 msgstr ""
 
@@ -123,12 +123,12 @@ msgid "Playlists"
 msgstr ""
 
 #: src/ui/sidebar.rs:1184 src/model.rs:810 src/model.rs:944
-#: src/ui/library.rs:17 src/ui/search.rs:595 src/ui/stats.rs:118
+#: src/ui/library.rs:17 src/ui/search.rs:595 src/ui/stats.rs:565
 msgid "Albums"
 msgstr ""
 
 #: src/ui/sidebar.rs:1185 src/model.rs:809 src/ui/library.rs:22
-#: src/ui/search.rs:527 src/ui/stats.rs:119
+#: src/ui/search.rs:527 src/ui/stats.rs:566
 msgid "Artists"
 msgstr ""
 
@@ -379,7 +379,7 @@ msgid "Next up"
 msgstr ""
 
 #: src/ui/queue.rs:625 src/ui/queue.rs:658 src/ui/widgets.rs:2998
-#: src/ui/collection.rs:1376 src/ui/prerelease.rs:283 src/ui/stats.rs:43
+#: src/ui/collection.rs:1376 src/ui/prerelease.rs:283 src/ui/stats.rs:69
 msgid "Retry"
 msgstr ""
 
@@ -3440,7 +3440,7 @@ msgctxt "column"
 msgid "Title"
 msgstr ""
 
-#: src/ui/prerelease.rs:320
+#: src/ui/prerelease.rs:320 src/ui/stats.rs:308
 msgid "Plays"
 msgstr ""
 
@@ -3580,90 +3580,180 @@ msgstr ""
 msgid "Played"
 msgstr ""
 
-#: src/ui/stats.rs:35
+#: src/ui/stats.rs:39
 msgid ""
 "Measured on this computer with the built-in player. No phone plays or "
 "estimated song durations."
 msgstr ""
 
-#: src/ui/stats.rs:59
-msgid "No listening recorded in this period"
+#: src/ui/stats.rs:40
+msgid "Local history"
 msgstr ""
 
-#: src/ui/stats.rs:62
+#: src/ui/stats.rs:46
+msgid "All your listening"
+msgstr ""
+
+#: src/ui/stats.rs:63
+msgid "Couldn't load listening stats"
+msgstr ""
+
+#: src/ui/stats.rs:88
+msgid "Your next listen starts the story"
+msgstr ""
+
+#: src/ui/stats.rs:92
 msgid ""
-"Play music with the built-in player to start your local history. Older "
-"Spotify plays are not imported."
+"Play music with the built-in player. Your time, favorites, and daily rhythm "
+"will appear here. Older Spotify plays are not imported."
 msgstr ""
 
-#: src/ui/stats.rs:70
-msgid "Time listened"
-msgstr ""
-
-#: src/ui/stats.rs:73
-msgid "Counted plays"
-msgstr ""
-
-#: src/ui/stats.rs:75
-msgid "Different tracks"
-msgstr ""
-
-#: src/ui/stats.rs:79
-msgid "Different artists"
-msgstr ""
-
-#: src/ui/stats.rs:103
-msgid "Daily listening"
-msgstr ""
-
-#: src/ui/stats.rs:104
-msgid "Daily listening · last 31 days"
-msgstr ""
-
-#: src/ui/stats.rs:117
-msgid "Tracks"
-msgstr ""
-
-#: src/ui/stats.rs:132
-msgid ""
-"Top 50, ordered by counted plays, then listening time. A play counts after "
-"30 seconds or half a shorter track."
-msgstr ""
-
-#: src/ui/stats.rs:136
-msgid "Ranking"
-msgstr ""
-
-#: src/ui/stats.rs:138
-msgid "Plays · time listened"
-msgstr ""
-
-#: src/ui/stats.rs:147
-msgid ""
-"Each credited artist receives the track's listening time. Artist totals are "
-"not added together."
-msgstr ""
-
-#: src/ui/stats.rs:152
+#: src/ui/stats.rs:128
 msgid ""
 "Stored only in listening.sqlite3, separately for each account. Clearing "
 "Spotify caches or Recents does not delete these stats."
 msgstr ""
 
-#: src/ui/stats.rs:165
+#: src/ui/stats.rs:145
 msgid "This month"
 msgstr ""
 
-#: src/ui/stats.rs:176
+#: src/ui/stats.rs:156
 msgid "All time"
 msgstr ""
 
-#: src/ui/stats.rs:190
+#: src/ui/stats.rs:171
 msgid "Previous month"
 msgstr ""
 
-#: src/ui/stats.rs:211
+#: src/ui/stats.rs:186
 msgid "Next month"
+msgstr ""
+
+#: src/ui/stats.rs:203
+msgid "Time listened"
+msgstr ""
+
+#: src/ui/stats.rs:205
+msgid "Measured, not estimated"
+msgstr ""
+
+#: src/ui/stats.rs:209
+msgid "Counted plays"
+msgstr ""
+
+#: src/ui/stats.rs:211
+msgid "30 seconds or half a short track"
+msgstr ""
+
+#: src/ui/stats.rs:215
+msgid "Different tracks"
+msgstr ""
+
+#: src/ui/stats.rs:219
+#, rust-format
+msgid "{count} album"
+msgid_plural "{count} albums"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/ui/stats.rs:227
+msgid "Different artists"
+msgstr ""
+
+#: src/ui/stats.rs:229
+msgid "Including collaborations"
+msgstr ""
+
+#: src/ui/stats.rs:303
+msgid "Daily listening"
+msgstr ""
+
+#: src/ui/stats.rs:309
+msgid "Time"
+msgstr ""
+
+#: src/ui/stats.rs:315
+msgid "Actual playback, day by day"
+msgstr ""
+
+#: src/ui/stats.rs:317
+msgid "Last 31 days · totals above cover all time"
+msgstr ""
+
+#: src/ui/stats.rs:412
+#, rust-format
+msgid "{count} counted play"
+msgid_plural "{count} counted plays"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/ui/stats.rs:484
+msgid "Active days"
+msgstr ""
+
+#: src/ui/stats.rs:486
+msgid "Average / active day"
+msgstr ""
+
+#: src/ui/stats.rs:496
+msgid "Best day"
+msgstr ""
+
+#: src/ui/stats.rs:501
+msgid "Longest streak"
+msgstr ""
+
+#: src/ui/stats.rs:502
+#, rust-format
+msgid "{count} day"
+msgid_plural "{count} days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/ui/stats.rs:514
+msgid "In this period"
+msgstr ""
+
+#: src/ui/stats.rs:540
+msgid "on your biggest listening day"
+msgstr ""
+
+#: src/ui/stats.rs:558
+msgid "On repeat"
+msgstr ""
+
+#: src/ui/stats.rs:564
+msgid "Tracks"
+msgstr ""
+
+#: src/ui/stats.rs:576
+msgid "Top 50 · ranked by counted plays, then listening time"
+msgstr ""
+
+#: src/ui/stats.rs:590
+msgid "No matching metadata recorded yet"
+msgstr ""
+
+#: src/ui/stats.rs:618
+msgid ""
+"A play counts after 30 seconds or half a shorter track. Short skips still "
+"add listening time."
+msgstr ""
+
+#: src/ui/stats.rs:622
+msgid "Album plays add up track plays, not complete album listens."
+msgstr ""
+
+#: src/ui/stats.rs:626
+msgid ""
+"Each credited artist receives the track's listening time. Artist totals are "
+"not added together."
+msgstr ""
+
+#: src/ui/stats.rs:781
+#, rust-format
+msgid "{percent}% of listening time"
 msgstr ""
 
 #: src/ui/topbar.rs:246

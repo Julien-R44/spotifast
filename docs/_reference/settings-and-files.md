@@ -387,6 +387,16 @@ Album rankings add track plays, not completed listens of an entire album.
 Every credited artist receives that play's time, so adding artist totals can
 exceed the overall total.
 
+The daily chart switches between listening time and counted plays. Hovering
+a day shows its date, time, and play count. In **All time**, the chart covers
+the last 31 days while the totals and rankings cover the entire history.
+The period summary shows days with measured listening, the average across
+those active days, the day with the most listening time, and the longest
+sequence of consecutive active days. Monthly streaks stay within that month.
+Ranked tracks and albums show their recorded cover art. Clicking a ranked
+track, album, or artist opens it in Spotifast. Bars show each row's share of
+the period's listening time, not its share of counted plays.
+
 The database stores UTC instants. Daily listening time is split at local
 midnight using the computer's time zone at startup. A counted play belongs to
 the local day it started. Rows aggregate measurements by application run,
